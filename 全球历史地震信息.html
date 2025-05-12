@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球历史地震信息查询</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36D399',
+                        accent: '#F59E0B',
+                        danger: '#EF4444',
+                        dark: '#1F2937',
+                        light: '#F9FAFB'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .card-hover {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .btn-pulse {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(22, 93, 255, 0.4);
+                }
+                70% {
+                    box-shadow: 0 0 0 10px rgba(22, 93, 255, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(22, 93, 255, 0);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <nav class="bg-primary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-earth-asia text-2xl"></i>
+                <h1 class="text-xl font-bold">地震信息查询</h1>
+            </div>
+            <div class="hidden md:flex space-x-4">
+                <a href="#" class="hover:text-gray-200 transition-colors duration-200">首页</a>
+                <a href="#" class="hover:text-gray-200 transition-colors duration-200">历史数据</a>
+                <a href="#" class="hover:text-gray-200 transition-colors duration-200">地图展示</a>
+                <a href="#" class="hover:text-gray-200 transition-colors duration-200">关于</a>
+            </div>
+            <button class="md:hidden text-white">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- 标题区域 -->
+        <div class="text-center mb-10">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-3">全球历史地震信息</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">查询全球范围内的历史地震记录，了解地震发生的时间、地点和震级信息</p>
+        </div>
+
+        <!-- 查询控制面板 -->
+        <div class="bg-white rounded-xl p-6 shadow-lg mb-8 max-w-3xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">年份</label>
+                    <select id="year" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-200">
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">月份</label>
+                    <select id="month" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-200">
+                        <option value="1">1月</option>
+                        <option value="2">2月</option>
+                        <option value="3">3月</option>
+                        <option value="4">4月</option>
+                        <option value="5">5月</option>
+                        <option value="6">6月</option>
+                        <option value="7">7月</option>
+                        <option value="8">8月</option>
+                        <option value="9">9月</option>
+                        <option value="10">10月</option>
+                        <option value="11">11月</option>
+                        <option value="12">12月</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">日期</label>
+                    <select id="day" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-200">
+                        <!-- 将通过JavaScript动态填充 -->
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex justify-center">
+                <button id="fetchBtn" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-all duration-200 shadow-lg btn-pulse">
+                    <i class="fa-solid fa-search"></i>
+                    <span>查询地震数据</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading" class="hidden flex-col items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p class="mt-4 text-gray-600">正在获取地震数据，请稍候...</p>
+        </div>
+
+        <!-- 错误信息 -->
+        <div id="error" class="hidden bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fa-solid fa-exclamation-triangle text-red-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-red-700" id="errorMessage">获取数据失败，请重试</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div id="stats" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-md flex items-center card-shadow card-hover">
+                <div class="p-3 bg-blue-100 rounded-full mr-4">
+                    <i class="fa-solid fa-earth-asia text-primary text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">地震总数</p>
+                    <p class="text-2xl font-bold text-gray-800" id="totalQuakes">0</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-md flex items-center card-shadow card-hover">
+                <div class="p-3 bg-orange-100 rounded-full mr-4">
+                    <i class="fa-solid fa-bolt text-accent text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">最大震级</p>
+                    <p class="text-2xl font-bold text-gray-800" id="maxMagnitude">0.0</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-md flex items-center card-shadow card-hover">
+                <div class="p-3 bg-green-100 rounded-full mr-4">
+                    <i class="fa-solid fa-map-marker text-secondary text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">涉及地区</p>
+                    <p class="text-2xl font-bold text-gray-800" id="regionsCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地震列表 -->
+        <div id="earthquakeList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 地震数据将通过JavaScript动态填充 -->
+        </div>
+
+        <!-- 无数据提示 -->
+        <div id="noData" class="hidden flex-col items-center justify-center py-16">
+            <div class="text-gray-400 mb-4">
+                <i class="fa-solid fa-folder-open text-5xl"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-700 mb-2">暂无地震数据</h3>
+            <p class="text-gray-500">请尝试选择其他日期进行查询</p>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">地震信息查询</h3>
+                    <p class="text-gray-400">提供全球历史地震数据查询服务，帮助用户了解地震活动规律和分布情况。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">首页</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">历史数据</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">地图展示</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">关于我们</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-envelope text-gray-400 mr-2"></i>
+                            <a href="mailto:contact@example.com" class="text-gray-400 hover:text-white transition-colors duration-200">contact@example.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-phone text-gray-400 mr-2"></i>
+                            <span class="text-gray-400">+86 123 4567 8901</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 地震信息查询平台. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 初始化日期选择器
+        document.addEventListener('DOMContentLoaded', () => {
+            const monthSelect = document.getElementById('month');
+            const daySelect = document.getElementById('day');
+            
+            // 生成1-31日的选项
+            for (let i = 1; i <= 31; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i}日`;
+                daySelect.appendChild(option);
+            }
+            
+            // 设置默认选中3月1日
+            monthSelect.value = '3';
+            daySelect.value = '1';
+            
+            // 绑定查询按钮事件
+            document.getElementById('fetchBtn').addEventListener('click', fetchEarthquakeData);
+        });
+
+        async function fetchEarthquakeData() {
+            // 显示加载状态，隐藏其他内容
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+            document.getElementById('earthquakeList').innerHTML = '';
+            document.getElementById('noData').style.display = 'none';
+            
+            try {
+                // 获取用户选择的日期
+                const year = document.getElementById('year').value;
+                const month = document.getElementById('month').value;
+                const day = document.getElementById('day').value;
+                
+                // 构建API URL
+                const apiUrl = 'https://cn.apihz.cn/api/tianqi/dizhenold.php';
+                const params = {
+                    id: '10004284',
+                    key: '9aa5c9321b471cb4225985717fb412b8',
+                    y: year,
+                    m: month,
+                    d: day
+                };
+
+                // 将参数添加到URL
+                const queryString = Object.entries(params)
+                    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                    .join('&');
+
+                const fullUrl = `${apiUrl}?${queryString}`;
+
+                // 发送请求
+                const response = await fetch(fullUrl);
+                
+                // 检查HTTP状态
+                if (!response.ok) {
+                    throw new Error(`HTTP错误，状态码: ${response.status}`);
+                }
+
+                // 解析JSON数据
+                const data = await response.json();
+                
+                // 处理API返回的数据
+                if (data && data.data && data.data.length > 0) {
+                    // 显示统计信息和地震列表
+                    displayStats(data.data);
+                    displayEarthquakeData(data.data);
+                    document.getElementById('stats').style.display = 'grid';
+                } else {
+                    // 显示无数据提示
+                    document.getElementById('noData').style.display = 'flex';
+                }
+            } catch (error) {
+                // 处理错误
+                console.error('获取地震数据时出错:', error);
+                document.getElementById('errorMessage').textContent = `获取数据失败: ${error.message}`;
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                // 隐藏加载状态
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayStats(earthquakes) {
+            // 更新统计信息
+            document.getElementById('totalQuakes').textContent = earthquakes.length;
+            
+            // 计算最大震级
+            const maxMagnitude = Math.max(...earthquakes.map(quake => parseFloat(quake.leve || 0)));
+            document.getElementById('maxMagnitude').textContent = maxMagnitude.toFixed(1);
+            
+            // 计算涉及地区数量
+            const regions = new Set();
+            earthquakes.forEach(quake => {
+                if (quake.weizhi) {
+                    regions.add(quake.weizhi);
+                }
+            });
+            document.getElementById('regionsCount').textContent = regions.size;
+        }
+
+        function displayEarthquakeData(earthquakes) {
+            const container = document.getElementById('earthquakeList');
+            
+            // 按震级从大到小排序
+            earthquakes.sort((a, b) => parseFloat(b.leve) - parseFloat(a.leve));
+            
+            earthquakes.forEach(quake => {
+                // 确定震级颜色
+                let magnitudeColor = 'bg-blue-100 text-blue-800';
+                const magnitude = parseFloat(quake.leve || 0);
+                
+                if (magnitude >= 7) {
+                    magnitudeColor = 'bg-red-100 text-red-800'; // 重大地震
+                } else if (magnitude >= 5) {
+                    magnitudeColor = 'bg-orange-100 text-orange-800'; // 中等地震
+                } else if (magnitude >= 3) {
+                    magnitudeColor = 'bg-yellow-100 text-yellow-800'; // 小地震
+                }
+                
+                // 创建地震卡片
+                const quakeElement = document.createElement('div');
+                quakeElement.className = 'bg-white rounded-xl overflow-hidden shadow-lg card-shadow card-hover transition-all duration-300';
+                
+                quakeElement.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center">
+                                <div class="${magnitudeColor} px-3 py-1 rounded-full text-sm font-medium">
+                                    ${quake.leve || '未知'} 级
+                                </div>
+                            </div>
+                            <span class="text-gray-500 text-sm">
+                                ${formatDate(quake.time)}
+                            </span>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold mb-2 truncate">${quake.weizhi || '未知地点'}</h3>
+                        
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <p class="text-xs text-gray-500">深度</p>
+                                <p class="font-medium">${quake.shendu || '未知'} km</p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <p class="text-xs text-gray-500">纬度/经度</p>
+                                <p class="font-medium">${quake.weidu || '未知'}, ${quake.jingdu || '未知'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                            <span class="text-xs text-gray-500">${quake.hctime ? '已核实' : '待核实'}</span>
+                            <button class="text-primary hover:text-primary/80 text-sm font-medium flex items-center transition-colors duration-200" onclick="showDetails(this, '${encodeURIComponent(JSON.stringify(quake))}')">
+                                查看详情 <i class="fa-solid fa-angle-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(quakeElement);
+            });
+        }
+        
+        function formatDate(timestamp) {
+            if (!timestamp) return '未知时间';
+            
+            // 格式化时间戳
+            const date = new Date(timestamp);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+        
+        function showDetails(button, quakeData) {
+            // 解析地震数据
+            const quake = JSON.parse(decodeURIComponent(quakeData));
+            
+            // 创建详情模态框
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+            modal.id = 'quakeDetailModal';
+            
+            // 格式化日期和时间
+            const formattedDate = formatDate(quake.time);
+            
+            // 构建模态框内容
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300 scale-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="text-xl font-bold">地震详情</h3>
+                        <button onclick="document.getElementById('quakeDetailModal').remove()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex justify-center mb-6">
+                            <div class="text-4xl font-bold ${getMagnitudeColorClass(quake.leve)}">
+                                ${quake.leve || '未知'} 级
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-500">发生时间</p>
+                                <p class="font-medium">${formattedDate}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-gray-500">发生地点</p>
+                                <p class="font-medium">${quake.weizhi || '未知地点'}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-gray-500">震源深度</p>
+                                <p class="font-medium">${quake.shendu || '未知'} km</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-gray-500">纬度/经度</p>
+                                <p class="font-medium">${quake.weidu || '未知'}, ${quake.jingdu || '未知'}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-gray-500">核实状态</p>
+                                <p class="font-medium">${quake.hctime ? '已核实' : '待核实'}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-sm text-gray-500">地震ID</p>
+                                <p class="font-medium">${quake.id || '未知'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 bg-gray-50 rounded-b-xl flex justify-end">
+                        <button onclick="document.getElementById('quakeDetailModal').remove()" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(modal);
+            
+            // 添加动画效果
+            setTimeout(() => {
+                const modalContent = modal.querySelector('div');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+        
+        function getMagnitudeColorClass(magnitude) {
+            const mag = parseFloat(magnitude || 0);
+            
+            if (mag >= 7) return 'text-red-600';
+            if (mag >= 5) return 'text-orange-600';
+            if (mag >= 3) return 'text-yellow-600';
+            return 'text-blue-600';
+        }
+    </script>
+</body>
+</html>

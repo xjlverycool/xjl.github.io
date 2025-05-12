@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>AI对话助手</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+	<script>
+		tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // 紫色作为主色调，传达科技感和创新性
+                        secondary: '#818CF8', // 浅紫色作为辅助色
+                        accent: '#F97316', // 橙色作为强调色
+                        neutral: {
+                            100: '#F5F5F5',
+                            200: '#E5E5E5',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+	</script>
+	<style type="text/tailwindcss">
+		@layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .animate-typing {
+                animation: typing 1.5s steps(20) infinite;
+            }
+            .animate-pulse-slow {
+                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .message-appear {
+                animation: messageAppear 0.3s ease-out forwards;
+            }
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes messageAppear {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-neutral-100 to-neutral-200 min-h-screen font-sans text-neutral-800">
+	<div class="container mx-auto px-4 py-8 max-w-4xl">
+		<!-- 标题区域 -->
+		<header class="text-center mb-8">
+			<h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-primary mb-2 flex items-center justify-center">
+				<i class="fa-solid fa-robot mr-3"></i>AI对话助手
+			</h1>
+			<p class="text-neutral-600 max-w-2xl mx-auto">
+				与智谱模型GLM-4-Flash进行连续对话，获取智能回答和建议
+			</p>
+		</header>
+
+		<!-- 聊天容器 -->
+		<div class="bg-white rounded-2xl shadow-xl overflow-hidden h-[70vh] min-h-[500px] max-h-[800px] flex flex-col">
+			<!-- 聊天头部 -->
+			<div class="bg-primary text-white p-4 flex items-center justify-between border-b border-primary/20">
+				<div class="flex items-center">
+					<div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3">
+						<i class="fa-solid fa-robot text-xl"></i>
+					</div>
+					<div>
+						<h2 class="font-semibold">GLM-4-Flash</h2>
+						<p class="text-xs text-white/80">智谱AI模型</p>
+					</div>
+				</div>
+				<div class="flex gap-3">
+					<button id="clearChat" class="text-white/80 hover:text-white transition-colors">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+					<button id="themeToggle" class="text-white/80 hover:text-white transition-colors">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+				</div>
+			</div>
+
+			<!-- 聊天消息区域 -->
+			<div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide bg-neutral-50">
+				<!-- 初始欢迎消息 -->
+				<div class="message-appear opacity-0" style="animation-delay: 0.2s">
+					<div class="flex items-start">
+						<div
+							class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+							<i class="fa-solid fa-robot text-primary"></i>
+						</div>
+						<div class="bg-white rounded-lg shadow-sm p-4 max-w-[85%] rounded-tl-none">
+							<p class="text-neutral-800">你好👋！我是GLM-4-Flash，智谱AI开发的大型语言模型。有什么可以帮助你的吗？</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 输入区域 -->
+			<div class="p-4 border-t border-neutral-200 bg-white">
+				<form id="messageForm" class="flex gap-3">
+					<div class="flex-1 relative">
+						<textarea
+                            id="messageInput"
+                            placeholder="输入消息..."
+                            class="w-full px-4 py-3 rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none min-h-[48px]"
+                            required
+                        ></textarea>
+						<div id="charCount" class="absolute right-3 bottom-2 text-xs text-neutral-500">0/2000</div>
+					</div>
+					<button
+                        type="submit"
+                        id="sendButton"
+                        class="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>发送</span>
+                    </button>
+				</form>
+			</div>
+		</div>
+
+		<!-- 移动端提示 -->
+		<div class="mt-4 text-center text-sm text-neutral-600">
+			<p>在移动设备上使用时，建议全屏查看以获得更好的体验</p>
+		</div>
+	</div>
+
+	<footer class="bg-neutral-800 text-white py-6 mt-8">
+		<div class="container mx-auto px-4 max-w-4xl text-center">
+			<p class="text-neutral-400">© 2025 AI对话助手 - 由智谱AI提供技术支持</p>
+		</div>
+	</footer>
+
+	<script>
+		// DOM元素
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const charCount = document.getElementById('charCount');
+        const chatMessages = document.getElementById('chatMessages');
+        const sendButton = document.getElementById('sendButton');
+        const clearChatButton = document.getElementById('clearChat');
+        const themeToggleButton = document.getElementById('themeToggle');
+        
+        // 状态变量
+        let conversationHistory = [];
+        let isWaitingForResponse = false;
+        let darkMode = false;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 设置文本框高度自适应
+            messageInput.addEventListener('input', adjustTextareaHeight);
+            
+            // 限制最大输入长度
+            messageInput.addEventListener('input', updateCharCount);
+            
+            // 提交表单
+            messageForm.addEventListener('submit', handleSendMessage);
+            
+            // 清空聊天
+            clearChatButton.addEventListener('click', clearChat);
+            
+            // 切换主题
+            themeToggleButton.addEventListener('click', toggleTheme);
+            
+            // 自动聚焦到输入框
+            messageInput.focus();
+        });
+        
+        // 调整文本框高度
+        function adjustTextareaHeight() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        }
+        
+        // 更新字符计数
+        function updateCharCount() {
+            const length = this.value.length;
+            const maxLength = 2000;
+            
+            charCount.textContent = `${length}/${maxLength}`;
+            
+            if (length > maxLength) {
+                charCount.classList.add('text-red-500');
+                this.value = this.value.substring(0, maxLength);
+                charCount.textContent = `${maxLength}/${maxLength}`;
+            } else {
+                charCount.classList.remove('text-red-500');
+            }
+        }
+        
+        // 处理发送消息
+        async function handleSendMessage(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            
+            if (!message || isWaitingForResponse) {
+                return;
+            }
+            
+            // 添加用户消息到对话
+            addMessageToChat('user', message);
+            
+            // 清空输入框
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            charCount.textContent = '0/2000';
+            
+            // 更新对话历史
+            conversationHistory.push({
+                role: 'user',
+                content: message
+            });
+            
+            // 显示AI正在思考的状态
+            const thinkingMessageId = addThinkingIndicator();
+            
+            // 禁用发送按钮
+            isWaitingForResponse = true;
+            sendButton.disabled = true;
+            
+            try {
+                // 调用API获取AI回复
+                const response = await fetchAIResponse(message);
+                
+                // 移除思考状态
+                removeElement(thinkingMessageId);
+                
+                // 添加AI回复到对话
+                addMessageToChat('assistant', response);
+                
+                // 更新对话历史
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: response
+                });
+            } catch (error) {
+                // 移除思考状态
+                removeElement(thinkingMessageId);
+                
+                // 显示错误消息
+                addMessageToChat('system', '抱歉，获取回复时出现错误。请稍后再试。');
+                console.error('获取AI回复时出错:', error);
+            } finally {
+                // 启用发送按钮
+                isWaitingForResponse = false;
+                sendButton.disabled = false;
+                
+                // 聚焦到输入框
+                messageInput.focus();
+            }
+        }
+        
+        // 调用AI API获取回复
+        async function fetchAIResponse(message) {
+            // 注意：在实际应用中，建议将API密钥存储在环境变量中，而不是直接在前端代码中
+            const encodedMessage = encodeURIComponent(message);
+            const apiUrl = `https://oiapi.net/API/BigModel/?message=${encodedMessage}`;
+            
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP错误，状态码: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.code === 1 && data.message) {
+                return data.message;
+            } else {
+                throw new Error('API返回错误或无效数据');
+            }
+        }
+        
+        // 添加消息到聊天界面
+        function addMessageToChat(role, content) {
+            const messageId = `msg-${Date.now()}`;
+            let messageHtml = '';
+            
+            if (role === 'user') {
+                messageHtml = `
+                    <div id="${messageId}" class="message-appear opacity-0 flex justify-end">
+                        <div class="flex items-start">
+                            <div class="bg-primary text-white rounded-lg shadow-sm p-4 max-w-[85%] rounded-tr-none">
+                                <p>${escapeHTML(content)}</p>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center ml-3 flex-shrink-0">
+                                <i class="fa-solid fa-user text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (role === 'assistant') {
+                messageHtml = `
+                    <div id="${messageId}" class="message-appear opacity-0">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+                                <i class="fa-solid fa-robot text-primary"></i>
+                            </div>
+                            <div class="bg-white rounded-lg shadow-sm p-4 max-w-[85%] rounded-tl-none">
+                                <p>${escapeHTML(content)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (role === 'system') {
+                messageHtml = `
+                    <div id="${messageId}" class="message-appear opacity-0 text-center">
+                        <div class="inline-block bg-neutral-200 text-neutral-700 rounded-full px-4 py-1 text-sm">
+                            ${escapeHTML(content)}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+            
+            // 滚动到底部
+            scrollToBottom();
+            
+            // 触发动画
+            setTimeout(() => {
+                const messageElement = document.getElementById(messageId);
+                if (messageElement) {
+                    messageElement.style.opacity = '1';
+                }
+            }, 50);
+            
+            return messageId;
+        }
+        
+        // 添加思考指示器
+        function addThinkingIndicator() {
+            const thinkingId = `thinking-${Date.now()}`;
+            const thinkingHtml = `
+                <div id="${thinkingId}" class="message-appear opacity-0">
+                    <div class="flex items-start">
+                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+                            <i class="fa-solid fa-robot text-primary"></i>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-4 max-w-[85%] rounded-tl-none">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 rounded-full bg-primary animate-pulse-slow"></div>
+                                <div class="w-2 h-2 rounded-full bg-primary animate-pulse-slow" style="animation-delay: 0.2s"></div>
+                                <div class="w-2 h-2 rounded-full bg-primary animate-pulse-slow" style="animation-delay: 0.4s"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.insertAdjacentHTML('beforeend', thinkingHtml);
+            scrollToBottom();
+            
+            // 触发动画
+            setTimeout(() => {
+                const thinkingElement = document.getElementById(thinkingId);
+                if (thinkingElement) {
+                    thinkingElement.style.opacity = '1';
+                }
+            }, 50);
+            
+            return thinkingId;
+        }
+        
+        // 清空聊天
+        function clearChat() {
+            // 保留欢迎消息
+            const welcomeMessage = chatMessages.firstElementChild;
+            chatMessages.innerHTML = '';
+            if (welcomeMessage) {
+                chatMessages.appendChild(welcomeMessage);
+                welcomeMessage.style.opacity = '1';
+            }
+            
+            // 重置对话历史
+            conversationHistory = [];
+            
+            // 聚焦到输入框
+            messageInput.focus();
+        }
+        
+        // 切换主题
+        function toggleTheme() {
+            darkMode = !darkMode;
+            
+            if (darkMode) {
+                document.body.classList.add('bg-neutral-900');
+                document.body.classList.remove('bg-gradient-to-br', 'from-neutral-100', 'to-neutral-200');
+                
+                const chatContainer = chatMessages.parentElement;
+                chatContainer.classList.add('bg-neutral-800');
+                chatContainer.classList.remove('bg-white');
+                
+                chatMessages.classList.add('bg-neutral-900');
+                chatMessages.classList.remove('bg-neutral-50');
+                
+                const messageBubbles = chatMessages.querySelectorAll('.bg-white:not(.rounded-full)');
+                messageBubbles.forEach(bubble => {
+                    bubble.classList.add('bg-neutral-700', 'text-white');
+                    bubble.classList.remove('bg-white', 'text-neutral-800');
+                });
+                
+                themeToggleButton.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            } else {
+                document.body.classList.remove('bg-neutral-900');
+                document.body.classList.add('bg-gradient-to-br', 'from-neutral-100', 'to-neutral-200');
+                
+                const chatContainer = chatMessages.parentElement;
+                chatContainer.classList.remove('bg-neutral-800');
+                chatContainer.classList.add('bg-white');
+                
+                chatMessages.classList.remove('bg-neutral-900');
+                chatMessages.classList.add('bg-neutral-50');
+                
+                const messageBubbles = chatMessages.querySelectorAll('.bg-neutral-700:not(.rounded-full)');
+                messageBubbles.forEach(bubble => {
+                    bubble.classList.remove('bg-neutral-700', 'text-white');
+                    bubble.classList.add('bg-white', 'text-neutral-800');
+                });
+                
+                themeToggleButton.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // 移除元素
+        function removeElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.remove();
+            }
+        }
+        
+        // 转义HTML特殊字符
+        function escapeHTML(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+	</script>
+</body>
+
+</html>
