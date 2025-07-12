@@ -3,14 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>经纬度地址查询工具</title>
+    <title>腾讯地图经纬度地址查询工具</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #b21f1f;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s ease;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         
         body {
@@ -21,52 +36,76 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            line-height: 1.6;
         }
         
         .container {
             width: 100%;
-            max-width: 900px;
-            background: rgba(255, 255, 255, 0.92);
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: var(--transition);
         }
         
         header {
-            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
             padding: 25px 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
         }
         
         header h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 15px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            max-width: 600px;
+            font-size: 1.2rem;
+            opacity: 0.92;
+            max-width: 700px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            font-weight: 300;
         }
         
         .content {
             display: flex;
             flex-wrap: wrap;
             padding: 30px;
+            gap: 30px;
         }
         
         .input-section {
             flex: 1;
             min-width: 300px;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
         }
         
         .result-section {
@@ -74,19 +113,22 @@
             min-width: 300px;
             padding: 20px;
             background: #f9f9f9;
-            border-radius: 15px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            border-radius: var(--border-radius);
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
         }
         
         .section-title {
-            font-size: 1.5rem;
-            color: #1a2a6c;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #b21f1f;
+            font-size: 1.7rem;
+            color: var(--primary);
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--secondary);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            font-weight: 700;
         }
         
         .input-group {
@@ -95,47 +137,87 @@
         
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 600;
-            color: #444;
-            font-size: 1.1rem;
+            color: var(--dark);
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .input-container {
+            position: relative;
         }
         
         input {
             width: 100%;
-            padding: 14px 15px;
-            border: 2px solid #ddd;
+            padding: 16px 20px 16px 50px;
+            border: 2px solid #e1e5eb;
             border-radius: 10px;
-            font-size: 1.1rem;
-            transition: all 0.3s;
+            font-size: 1.15rem;
+            transition: var(--transition);
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         input:focus {
-            border-color: #1a2a6c;
+            border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.2);
+            box-shadow: 0 0 0 4px rgba(26, 42, 108, 0.15);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2rem;
         }
         
         button {
-            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
             border: none;
-            padding: 15px 25px;
-            font-size: 1.2rem;
+            padding: 18px 25px;
+            font-size: 1.25rem;
             border-radius: 10px;
             cursor: pointer;
             width: 100%;
-            font-weight: 600;
-            transition: all 0.3s;
+            font-weight: 700;
+            transition: var(--transition);
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(178, 31, 31, 0.2);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, var(--secondary), var(--primary));
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
         }
         
         button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(178, 31, 31, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(178, 31, 31, 0.35);
+        }
+        
+        button:hover::before {
+            opacity: 1;
         }
         
         button:active {
@@ -144,12 +226,13 @@
         
         .result-content {
             background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            min-height: 300px;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            flex: 1;
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
         
         .address-card {
@@ -160,93 +243,122 @@
         }
         
         .address-main {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #1a2a6c;
-            margin-bottom: 20px;
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 25px;
             line-height: 1.4;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .address-main::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--secondary);
+            border-radius: 2px;
         }
         
         .address-detail {
-            font-size: 1.1rem;
-            color: #555;
-            margin-bottom: 10px;
-            padding-left: 5px;
-            border-left: 3px solid #b21f1f;
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 16px;
+            padding-left: 15px;
+            border-left: 3px solid var(--accent);
+            line-height: 1.5;
         }
         
         .location-info {
             display: flex;
             gap: 20px;
-            margin-top: 15px;
+            margin-top: 25px;
             flex-wrap: wrap;
         }
         
         .location-item {
-            background: #f0f4ff;
-            padding: 12px 15px;
-            border-radius: 8px;
-            font-size: 0.95rem;
+            background: linear-gradient(to bottom right, #f0f4ff, #e4e9ff);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.05rem;
             flex: 1;
-            min-width: 120px;
+            min-width: 150px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e0e5ff;
         }
         
         .location-item strong {
             display: block;
-            color: #b21f1f;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-bottom: 8px;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
         }
         
         .sample-data {
-            margin-top: 20px;
+            margin-top: auto;
             background: #eef7ff;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 0.9rem;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            border: 1px dashed #b8daff;
         }
         
         .sample-data h3 {
-            margin-bottom: 10px;
-            color: #1a2a6c;
+            margin-bottom: 15px;
+            color: var(--primary);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            font-size: 1.3rem;
         }
         
         .coordinates {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         
         .coordinate {
-            padding: 8px 15px;
+            padding: 10px 18px;
             background: #d1e7ff;
-            border-radius: 20px;
+            border-radius: 30px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+            min-width: 80px;
         }
         
         .coordinate:hover {
-            background: #1a2a6c;
+            background: var(--primary);
             color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(26, 42, 108, 0.2);
         }
         
         .loading {
             display: none;
             text-align: center;
-            padding: 40px 0;
+            padding: 50px 0;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
         }
         
         .loading-spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #1a2a6c;
+            border: 6px solid rgba(26, 42, 108, 0.1);
+            border-top: 6px solid var(--primary);
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin-bottom: 25px;
         }
         
         @keyframes spin {
@@ -255,25 +367,65 @@
         }
         
         .error-message {
-            color: #d32f2f;
+            color: var(--danger);
             background: #ffebee;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
             display: none;
+            border-left: 4px solid var(--danger);
+            font-weight: 500;
+        }
+        
+        .api-info {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
         }
         
         footer {
             text-align: center;
             padding: 20px;
             background: #f1f1f1;
-            color: #666;
-            font-size: 0.9rem;
+            color: var(--gray);
+            font-size: 0.95rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .result-label {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-value {
+            font-size: 1.1rem;
+            padding-left: 28px;
         }
         
         @media (max-width: 768px) {
             .content {
                 flex-direction: column;
+                gap: 20px;
             }
             
             .input-section, .result-section {
@@ -281,10 +433,14 @@
             }
             
             header h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
             
             .address-main {
+                font-size: 1.6rem;
+            }
+            
+            .section-title {
                 font-size: 1.5rem;
             }
         }
@@ -293,8 +449,8 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-map-marked-alt"></i> 经纬度地址查询工具</h1>
-            <p>输入经纬度坐标，获取详细地址信息 - 基于腾讯地图API</p>
+            <h1><i class="fas fa-map-marked-alt"></i> 腾讯地图经纬度地址查询</h1>
+            <p>输入经纬度坐标，获取详细的地址信息 - 基于腾讯地图地理编码API</p>
         </header>
         
         <div class="content">
@@ -303,17 +459,27 @@
                 
                 <div class="input-group">
                     <label for="latitude"><i class="fas fa-arrows-up-down"></i> 纬度 (Latitude)</label>
-                    <input type="text" id="latitude" placeholder="例如：34.325256" value="34.325256">
+                    <div class="input-container">
+                        <i class="fas fa-globe-asia input-icon"></i>
+                        <input type="text" id="latitude" placeholder="例如：34.325256" value="34.325256">
+                    </div>
                 </div>
                 
                 <div class="input-group">
                     <label for="longitude"><i class="fas fa-arrows-left-right"></i> 经度 (Longitude)</label>
-                    <input type="text" id="longitude" placeholder="例如：108.933819" value="108.933819">
+                    <div class="input-container">
+                        <i class="fas fa-globe-asia input-icon"></i>
+                        <input type="text" id="longitude" placeholder="例如：108.933819" value="108.933819">
+                    </div>
                 </div>
                 
                 <button id="search-btn">
-                    <i class="fas fa-search"></i> 查询地址
+                    <i class="fas fa-search-location"></i> 查询地址
                 </button>
+                
+                <div class="api-info">
+                    <i class="fas fa-info-circle"></i> 使用腾讯地图地理编码API，提供精准的位置解析服务
+                </div>
                 
                 <div class="sample-data">
                     <h3><i class="fas fa-vial"></i> 示例坐标</h3>
@@ -335,37 +501,52 @@
                         <p>正在查询地址信息，请稍候...</p>
                     </div>
                     
-                    <div class="address-card">
-                        <div class="address-main">陕西省西安市未央区尚诚路</div>
+                    <div id="result-data">
+                        <div class="result-item">
+                            <div class="result-label"><i class="fas fa-map-pin"></i> 详细地址</div>
+                            <div class="result-value" id="address">陕西省西安市未央区尚诚路</div>
+                        </div>
                         
-                        <div class="address-detail">中国, 陕西省, 西安市, 未央区</div>
-                        <div class="address-detail">文景路19号 (陕西交通职业技术学院附近)</div>
+                        <div class="result-item">
+                            <div class="result-label"><i class="fas fa-layer-group"></i> 行政区划</div>
+                            <div class="result-value" id="admin-area">中国, 陕西省, 西安市, 未央区</div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <div class="result-label"><i class="fas fa-road"></i> 街道信息</div>
+                            <div class="result-value" id="street">尚诚路</div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <div class="result-label"><i class="fas fa-landmark"></i> 地标信息</div>
+                            <div class="result-value" id="landmark">陕西交通职业技术学院(崇学路南)</div>
+                        </div>
                         
                         <div class="location-info">
                             <div class="location-item">
-                                <strong>行政区划代码</strong>
-                                610112
+                                <strong><i class="fas fa-barcode"></i> 行政区划代码</strong>
+                                <span id="adcode">610112</span>
                             </div>
                             <div class="location-item">
-                                <strong>电话区号</strong>
-                                029
+                                <strong><i class="fas fa-phone"></i> 电话区号</strong>
+                                <span id="area-code">029</span>
                             </div>
                             <div class="location-item">
-                                <strong>经度/纬度</strong>
-                                108.938458, 34.323683
+                                <strong><i class="fas fa-compass"></i> 解析坐标</strong>
+                                <span id="parsed-location">108.938458, 34.323683</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="error-message" id="error-message">
-                        无法获取地址信息，请检查坐标是否正确或重试
+                        <i class="fas fa-exclamation-triangle"></i> 无法获取地址信息，请检查坐标是否正确或重试
                     </div>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>© 2023 经纬度地址查询工具 | 使用腾讯地图API提供地理信息服务</p>
+            <p>© 2023 腾讯地图经纬度地址查询工具 | 基于腾讯地图地理编码API</p>
         </footer>
     </div>
 
@@ -376,7 +557,7 @@
             const longitudeInput = document.getElementById('longitude');
             const errorMessage = document.getElementById('error-message');
             const loadingIndicator = document.querySelector('.loading');
-            const addressCard = document.querySelector('.address-card');
+            const resultData = document.getElementById('result-data');
             
             // 示例坐标点击事件
             document.querySelectorAll('.coordinate').forEach(item => {
@@ -415,42 +596,34 @@
                 }
                 
                 // 显示加载状态
-                loadingIndicator.style.display = 'block';
-                addressCard.style.display = 'none';
+                loadingIndicator.style.display = 'flex';
+                resultData.style.display = 'none';
                 errorMessage.style.display = 'none';
                 
-                // 模拟API请求（实际项目中应替换为真实API调用）
-                setTimeout(() => {
-                    // 这里模拟API响应
-                    const mockResponse = {
-                        status: 0,
-                        result: {
-                            address: "陕西省西安市未央区尚诚路",
-                            address_component: {
-                                nation: "中国",
-                                province: "陕西省",
-                                city: "西安市",
-                                district: "未央区",
-                                street: "尚诚路",
-                                street_number: ""
-                            },
-                            formatted_addresses: {
-                                recommend: "未央区陕西交通职业技术学院(崇学路南)"
-                            },
-                            ad_info: {
-                                adcode: "610112",
-                                phone_area_code: "029"
-                            },
-                            location: {
-                                lat: 34.323683,
-                                lng: 108.938458
-                            }
-                        }
-                    };
+                // 使用腾讯地图API进行真实查询
+                const apiKey = '2J4BZ-PBHH2-VYGU4-CODCH-C4EA2-W4BAU';
+                const url = `https://apis.map.qq.com/ws/geocoder/v1/?location=${lat},${lng}&key=${apiKey}&output=jsonp&coord_type=1`;
+                
+                // 使用JSONP处理跨域请求
+                const callbackName = 'jsonp_callback_' + Date.now();
+                window[callbackName] = function(response) {
+                    // 清理回调函数和script标签
+                    delete window[callbackName];
+                    document.body.removeChild(script);
                     
                     // 处理响应
-                    handleResponse(mockResponse);
-                }, 1200);
+                    handleResponse(response);
+                };
+                
+                const script = document.createElement('script');
+                script.src = `${url}&callback=${callbackName}`;
+                script.onerror = function() {
+                    showError('网络请求失败，请检查网络连接');
+                    document.body.removeChild(script);
+                    delete window[callbackName];
+                };
+                
+                document.body.appendChild(script);
             }
             
             function handleResponse(response) {
@@ -459,34 +632,39 @@
                 if (response.status === 0) {
                     // 显示结果
                     const result = response.result;
-                    document.querySelector('.address-main').textContent = result.address;
-                    document.querySelectorAll('.address-detail')[0].textContent = 
-                        `${result.address_component.nation}, ${result.address_component.province}, ${result.address_component.city}, ${result.address_component.district}`;
                     
-                    document.querySelectorAll('.address-detail')[1].textContent = 
-                        result.formatted_addresses.recommend;
+                    // 更新DOM元素
+                    document.getElementById('address').textContent = result.address || '无数据';
+                    document.getElementById('admin-area').textContent = 
+                        `${result.address_component.nation || ''}, ${result.address_component.province || ''}, ${result.address_component.city || ''}, ${result.address_component.district || ''}`;
                     
-                    document.querySelectorAll('.location-item')[0].innerHTML = 
-                        `<strong>行政区划代码</strong>${result.ad_info.adcode}`;
+                    document.getElementById('street').textContent = 
+                        result.address_component.street + (result.address_component.street_number ? result.address_component.street_number : '');
                     
-                    document.querySelectorAll('.location-item')[1].innerHTML = 
-                        `<strong>电话区号</strong>${result.ad_info.phone_area_code}`;
+                    document.getElementById('landmark').textContent = 
+                        result.formatted_addresses.recommend || result.formatted_addresses.rough || '无地标信息';
                     
-                    document.querySelectorAll('.location-item')[2].innerHTML = 
-                        `<strong>经度/纬度</strong>${result.location.lng.toFixed(6)}, ${result.location.lat.toFixed(6)}`;
+                    document.getElementById('adcode').textContent = result.ad_info.adcode || '无数据';
+                    document.getElementById('area-code').textContent = result.ad_info.phone_area_code || '无数据';
                     
-                    addressCard.style.display = 'flex';
+                    document.getElementById('parsed-location').textContent = 
+                        `${result.location.lng.toFixed(6)}, ${result.location.lat.toFixed(6)}`;
+                    
+                    resultData.style.display = 'block';
                 } else {
-                    showError('无法获取地址信息，请检查坐标是否正确');
+                    showError(`查询失败: ${response.message || '未知错误'}`);
                 }
             }
             
             function showError(message) {
                 loadingIndicator.style.display = 'none';
-                addressCard.style.display = 'none';
+                resultData.style.display = 'none';
                 errorMessage.style.display = 'block';
-                errorMessage.textContent = message;
+                errorMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
             }
+            
+            // 初始加载时查询一次
+            setTimeout(searchAddress, 500);
         });
     </script>
 </body>
