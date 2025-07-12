@@ -1,699 +1,493 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>魔域的小喽啰</title>
-	<!-- 引入Tailwind CSS -->
-	<script src="https://cdn.tailwindcss.com"></script>
-	<script src="https://api.suyanw.cn/api/mouse/yinghua.js"/></script>
-	<!-- 引入Font Awesome 6 -->
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-	<style>
-		/* 自定义滚动进度条样式 */
-		
-
-		.scroll-progress {
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 3px;
-			background-color: #ecf0f1;
-			z-index: 1001;
-		}
-
-		.scroll-progress-bar {
-			height: 100%;
-			background-color: #3498db;
-			width: 0;
-			transition: width 0.3s ease;
-		}
-
-		/*社会主义核心价值观*/
-		.word {
-			position: absolute;
-			font-size: 18px;
-			pointer-events: none;
-			transition: all 1.5s;
-			color: #ff4f4d;
-			/* 统一设置颜色 */
-		}
-
-		/* 时钟样式优化 */
-		#clock {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			font-size: 1.125rem;
-		}
-
-		.clock-icon {
-			color: #3498db;
-			font-size: 1.5rem;
-		}
-
-		#datetime-display {
-			display: flex;
-			align-items: center;
-			gap: 4px;
-		}
-
-		.time-separator {
-			color: #e0e0e0;
-			font-weight: 400;
-		}
-
-		/* 天气模块样式 */
-		#weather-info {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			font-size: 1.125rem;
-		}
-
-		.weather-icon {
-			font-size: 1.5rem;
-			color: #3498db;
-		}
-
-		.weather-temperature {
-			font-weight: 600;
-		}
-
-		/* 新增IP显示样式 */
-		#ip-info {
-			display: flex;
-			align-items: center;
-			gap: 4px;
-			font-size: 1rem;
-			color: #718096;
-		}
-	</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经纬度地址查询工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+        }
+        
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+        }
+        
+        .result-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #1a2a6c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #b21f1f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 1.1rem;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            border-color: #1a2a6c;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(178, 31, 31, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .address-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .address-main {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2a6c;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        
+        .address-detail {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 10px;
+            padding-left: 5px;
+            border-left: 3px solid #b21f1f;
+        }
+        
+        .location-info {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .location-item {
+            background: #f0f4ff;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .location-item strong {
+            display: block;
+            color: #b21f1f;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .sample-data {
+            margin-top: 20px;
+            background: #eef7ff;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .sample-data h3 {
+            margin-bottom: 10px;
+            color: #1a2a6c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .coordinates {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .coordinate {
+            padding: 8px 15px;
+            background: #d1e7ff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .coordinate:hover {
+            background: #1a2a6c;
+            color: white;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1a2a6c;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f1f1f1;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .input-section, .result-section {
+                width: 100%;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .address-main {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
-
 <body>
-	<!-- 滚动进度条 -->
-	<div class="scroll-progress">
-		<div class="scroll-progress-bar"></div>
-	</div>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-map-marked-alt"></i> 经纬度地址查询工具</h1>
+            <p>输入经纬度坐标，获取详细地址信息 - 基于腾讯地图API</p>
+        </header>
+        
+        <div class="content">
+            <div class="input-section">
+                <h2 class="section-title"><i class="fas fa-location-dot"></i> 坐标输入</h2>
+                
+                <div class="input-group">
+                    <label for="latitude"><i class="fas fa-arrows-up-down"></i> 纬度 (Latitude)</label>
+                    <input type="text" id="latitude" placeholder="例如：34.325256" value="34.325256">
+                </div>
+                
+                <div class="input-group">
+                    <label for="longitude"><i class="fas fa-arrows-left-right"></i> 经度 (Longitude)</label>
+                    <input type="text" id="longitude" placeholder="例如：108.933819" value="108.933819">
+                </div>
+                
+                <button id="search-btn">
+                    <i class="fas fa-search"></i> 查询地址
+                </button>
+                
+                <div class="sample-data">
+                    <h3><i class="fas fa-vial"></i> 示例坐标</h3>
+                    <div class="coordinates">
+                        <div class="coordinate" data-lat="39.90403" data-lng="116.40753">北京</div>
+                        <div class="coordinate" data-lat="31.23039" data-lng="121.47370">上海</div>
+                        <div class="coordinate" data-lat="23.12911" data-lng="113.26436">广州</div>
+                        <div class="coordinate" data-lat="30.57227" data-lng="104.06654">成都</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h2 class="section-title"><i class="fas fa-map-location-dot"></i> 查询结果</h2>
+                
+                <div class="result-content">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>正在查询地址信息，请稍候...</p>
+                    </div>
+                    
+                    <div class="address-card">
+                        <div class="address-main">陕西省西安市未央区尚诚路</div>
+                        
+                        <div class="address-detail">中国, 陕西省, 西安市, 未央区</div>
+                        <div class="address-detail">文景路19号 (陕西交通职业技术学院附近)</div>
+                        
+                        <div class="location-info">
+                            <div class="location-item">
+                                <strong>行政区划代码</strong>
+                                610112
+                            </div>
+                            <div class="location-item">
+                                <strong>电话区号</strong>
+                                029
+                            </div>
+                            <div class="location-item">
+                                <strong>经度/纬度</strong>
+                                108.938458, 34.323683
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="error-message" id="error-message">
+                        无法获取地址信息，请检查坐标是否正确或重试
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 经纬度地址查询工具 | 使用腾讯地图API提供地理信息服务</p>
+        </footer>
+    </div>
 
-	<!-- 导航栏 -->
-	<nav class="fixed top-0 left-0 w-full py-4 px-12 bg-white/90 shadow-md z-1000 transition-all duration-300">
-		<div class="flex justify-between items-center">
-			<a href="#" class="text-2xl font-bold text-blue-500">我的网站</a>
-			<div class="hidden md:flex space-x-8">
-				<a href="#home" class="text-gray-700 hover:text-blue-500 relative">首页</a>
-				<a href="#about" class="text-gray-700 hover:text-blue-500 relative">关于我</a>
-				<a href="#projects" class="text-gray-700 hover:text-blue-500 relative">项目</a>
-				<a href="#bookmarks" class="text-gray-700 hover:text-blue-500 relative">网页收藏</a>
-				<a href="#contact" class="text-gray-700 hover:text-blue-500 relative">联系我</a>
-			</div>
-			<!-- 优化后的时钟显示（带秒数的北京时间） -->
-			<div class="flex items-center gap-8">
-				<div id="clock" class="text-gray-700">
-					<span id="datetime-display"></span>
-				</div>
-				<!-- 新增天气信息模块 -->
-				<div id="weather-info" class="text-gray-700">
-					<i class="weather-icon fas fa-sun"></i> <!-- 初始默认图标，后续动态替换 -->
-					<span id="weather-city"></span>
-					<span class="weather-temperature" id="weather-temperature"></span>
-					<span id="weather-condition"></span>
-				</div>
-				<div id="ip-info">
-					<i class="fa-solid fa-globe text-blue-500"></i>
-					<span id="current-ip">加载中...</span>
-				</div>
-			</div>
-		</div>
-	</nav>
-
-	<!-- 英雄区域 -->
-	<section id="home" class="h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300">
-		<div class="text-center max-w-4xl px-4">
-			<h1 class="text-5xl font-bold text-gray-800 mb-4">你好，我是<span class="text-blue-500">魔域的小喽啰</span></h1>
-			<p class="text-lg text-gray-600 mb-8">我是一名充满激情的前端开发者，专注于创建美观、交互性强的网站和应用程序。我热爱将创意转化为现实，为用户提供了一个科学的解决方案。</p>
-			<div class="flex justify-center space-x-4">
-				<a href="#contact"
-					class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">联系我</a>
-				<a href="#projects"
-					class="border border-blue-500 text-blue-500 py-3 px-8 rounded-full font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300">查看作品</a>
-			</div>
-		</div>
-	</section>
-
-	<!-- 关于我部分 -->
-	<section id="about" class="py-24 px-12 bg-white">
-		<div class="text-center mb-16">
-			<h2 class="text-4xl font-bold text-gray-800 relative inline-block">关于我</h2>
-			<div class="w-16 h-1 bg-blue-500 absolute bottom-[-10px] left-1/2 -translate-x-1/2"></div>
-		</div>
-		<div class="flex flex-col md:flex-row items-center gap-12 max-w-6xl mx-auto">
-			<div class="w-full md:w-1/2 rounded-lg overflow-hidden shadow-lg">
-				<a href="https://www.dmoe.cc/random.php" width="640px" height="282px"><img
-						src="https://www.dmoe.cc/random.php" alt="pELGATH.jpg" border="0" width="640px"
-						height="282px" /></a>
-			</div>
-			<!-- 网易云外链播放器-->
-			<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86
-				src="//music.163.com/outchain/player?type=2&id=407435011&auto=1&height=66"></iframe>
-			<div class="w-full md:w-1/2">
-				<h3 class="text-3xl font-bold text-gray-800 mb-4">我是谁</h3>
-				<p class="text-gray-600 mb-4">
-					我是一名经验丰富的前端开发者，拥有超过5年的行业经验。我专注于创建用户友好、性能优化的网站和应用程序。我热爱学习新技术，并不断挑战自我，以提供最佳的解决方案。</p>
-				<p class="text-gray-600 mb-8">我相信好的设计不仅仅是视觉上的愉悦，更是功能上的完美结合。我致力于创建既美观又实用的数字产品。</p>
-				<div class="space-y-4">
-					<div>
-						<div class="flex justify-between mb-2">
-							<span class="text-gray-700">HTML/CSS</span>
-							<span class="text-gray-700">95%</span>
-						</div>
-						<div class="bg-gray-200 rounded-full h-2 overflow-hidden">
-							<div class="bg-blue-500 h-full w-9/10 rounded-full"></div>
-						</div>
-					</div>
-					<div>
-						<div class="flex justify-between mb-2">
-							<span class="text-gray-700">JavaScript</span>
-							<span class="text-gray-700">90%</span>
-						</div>
-						<div class="bg-gray-200 rounded-full h-2 overflow-hidden">
-							<div class="bg-blue-500 h-full w-9/10 rounded-full"></div>
-						</div>
-					</div>
-					<div>
-						<div class="flex justify-between mb-2">
-							<span class="text-gray-700">React</span>
-							<span class="text-gray-700">85%</span>
-						</div>
-						<div class="bg-gray-200 rounded-full h-2 overflow-hidden">
-							<div class="bg-blue-500 h-full w-8/10 rounded-full"></div>
-						</div>
-					</div>
-					<div>
-						<div class="flex justify-between mb-2">
-							<span class="text-gray-700">Node.js</span>
-							<span class="text-gray-700">75%</span>
-						</div>
-						<div class="bg-gray-200 rounded-full h-2 overflow-hidden">
-							<div class="bg-blue-500 h-full w-7/10 rounded-full"></div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
-
-	<!-- 网页收藏部分 -->
-	<section id="bookmarks" class="py-24 px-12 bg-gray-100">
-		<div class="text-center mb-16">
-			<h2 class="text-4xl font-bold text-gray-800 relative inline-block">网页收藏</h2>
-			<div class="w-16 h-1 bg-blue-500 absolute bottom-[-10px] left-1/2 -translate-x-1/2"></div>
-		</div>
-		<div class="max-w-6xl mx-auto">
-			<div class="bg-white p-8 rounded-lg shadow-md mb-8">
-				<h3 class="text-2xl font-bold text-gray-800 mb-6">添加新收藏</h3>
-				<form id="add-bookmark-form">
-					<div class="mb-4">
-						<input type="text" placeholder="网页名称"
-							class="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:border-blue-500">
-					</div>
-					<div class="mb-4">
-						<input type="url" placeholder="网页链接"
-							class="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:border-blue-500">
-					</div>
-					<div class="mb-6">
-						<textarea placeholder="描述（可选）"
-							class="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:border-blue-500"></textarea>
-					</div>
-					<button type="submit"
-						class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">添加收藏</button>
-				</form>
-			</div>
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="bookmark-list">
-				<!-- 收藏的网页将动态添加到这里 -->
-			</div>
-		</div>
-	</section>
-
-	<!-- 项目部分 -->
-	<section id="projects" class="py-24 px-12 bg-white">
-		<div class="text-center mb-16">
-			<h2 class="text-4xl font-bold text-gray-800 relative inline-block">我的项目</h2>
-			<div class="w-16 h-1 bg-blue-500 absolute bottom-[-10px] left-1/2 -translate-x-1/2"></div>
-		</div>
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
-			<div
-				class="bg-white rounded-lg overflow-hidden shadow-md hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://www.dmoe.cc/random.php" alt="坐标地址双向查询工具"
-						class="w-full h-full object-cover hover:scale-110 transition-all duration-500">
-				</div>
-				<div class="p-6">
-					<h3 class="text-2xl font-bold text-gray-800 mb-2">坐标地址双向查询工具</h3>
-					<p class="text-gray-600 mb-4">一个高效的地理位置工具，支持经纬度与地址的相互转换，适用于地图应用和位置服务集成。</p>
-					<div class="flex flex-wrap gap-2 mb-4">
-						<span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm">React</span>
-						<span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-sm">Leaflet</span>
-						<span class="bg-purple-100 text-purple-800 py-1 px-3 rounded-full text-sm">MongoDB</span>
-						<span class="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full text-sm">REST API</span>
-					</div>
-					<a href="https://xjl.rth1.xyz/%E5%9D%90%E6%A0%87%E5%9C%B0%E5%9D%80%E5%8F%8C%E5%90%91%E6%9F%A5%E8%AF%A2%E5%B7%A5%E5%85%B7.html"
-						class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">查看详情</a>
-				</div>
-			</div>
-			<div
-				class="bg-white rounded-lg overflow-hidden shadow-md hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://www.dmoe.cc/random.php" alt="今日头条-热榜"
-						class="w-full h-full object-cover hover:scale-110 transition-all duration-500">
-				</div>
-				<div class="p-6">
-					<h3 class="text-2xl font-bold text-gray-800 mb-2">今日头条-热榜</h3>
-					<p class="text-gray-600 mb-4">一个实时聚合热点资讯的平台，提供最新、最热门的新闻和话题，支持个性化订阅和分享。</p>
-					<div class="flex flex-wrap gap-2 mb-4">
-						<span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-sm">Vue.js</span>
-						<span class="bg-orange-100 text-orange-800 py-1 px-3 rounded-full text-sm">Firebase</span>
-						<span class="bg-indigo-100 text-indigo-800 py-1 px-3 rounded-full text-sm">Vuex</span>
-						<span class="bg-pink-100 text-pink-800 py-1 px-3 rounded-full text-sm">WebSocket</span>
-					</div>
-					<a href="https://xjl.rth1.xyz/%E4%BB%8A%E6%97%A5%E5%A4%B4%E6%9D%A1-%E7%83%AD%E6%A6%9C.html"
-						class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">查看详情</a>
-				</div>
-			</div>
-			<div
-				class="bg-white rounded-lg overflow-hidden shadow-md hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://www.dmoe.cc/random.php" alt="网易云单曲解析工具"
-						class="w-full h-full object-cover hover:scale-110 transition-all duration-500">
-				</div>
-				<div class="p-6">
-					<h3 class="text-2xl font-bold text-gray-800 mb-2">网易云单曲解析工具</h3>
-					<p class="text-gray-600 mb-4">一个高效的音乐解析工具，支持从网易云音乐平台提取单曲资源，提供高品质音频下载和分享功能。</p>
-					<div class="flex flex-wrap gap-2 mb-4">
-						<span class="bg-teal-100 text-teal-800 py-1 px-3 rounded-full text-sm">React</span>
-						<span class="bg-cyan-100 text-cyan-800 py-1 px-3 rounded-full text-sm">Redux</span>
-						<span class="bg-amber-100 text-amber-800 py-1 px-3 rounded-full text-sm">Express</span>
-						<span class="bg-emerald-100 text-emerald-800 py-1 px-3 rounded-full text-sm">PostgreSQL</span>
-					</div>
-					<a href="https://xjl.rth1.xyz/%E7%BD%91%E6%98%93%E4%BA%91%E5%8D%95%E6%9B%B2%E8%A7%A3%E6%9E%90%E5%B7%A5%E5%85%B7.html"
-						class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">查看详情</a>
-				</div>
-			</div>
-			<div
-				class="bg-white rounded-lg overflow-hidden shadow-md hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://api.lolimi.cn/API/dmtx/yspc.php" alt="360高质量桌面壁纸"
-						class="w-full h-full object-cover hover:scale-110 transition-all duration-500">
-				</div>
-				<div class="p-6">
-					<h3 class="text-2xl font-bold text-gray-800 mb-2">360高质量桌面壁纸</h3>
-					<p class="text-gray-600 mb-4">从360壁纸API获取的精选高清壁纸，满足你的个性化需求。支持一键下载，方便快捷。</p>
-					<div class="flex flex-wrap gap-2 mb-4">
-						<span class="bg-amber-100 text-amber-800 py-1 px-3 rounded-full text-sm">Vue 3</span>
-						<span class="bg-rose-100 text-rose-800 py-1 px-3 rounded-full text-sm">Pinia</span>
-						<span class="bg-sky-100 text-sky-800 py-1 px-3 rounded-full text-sm">Vite</span>
-						<span class="bg-emerald-100 text-emerald-800 py-1 px-3 rounded-full text-sm">Node.js</span>
-					</div>
-					<a href="https://xjlverycool.rth1.xyz/%E8%BF%94%E5%9B%9E360%E5%A3%81%E7%BA%B8.html"
-						class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">查看详情</a>
-				</div>
-			</div>
-			<div
-				class="bg-white rounded-lg overflow-hidden shadow-md hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://api.lolimi.cn/API/dmtx/yspc.php" alt="万年历查询工具"
-						class="w-full h-full object-cover hover:scale-110 transition-all duration-500">
-				</div>
-				<div class="p-6">
-					<h3 class="text-2xl font-bold text-gray-800 mb-2">万年历时辰吉凶查询</h3>
-					<p class="text-gray-600 mb-4">一个功能强大的日期查询工具，支持获取指定日期的详细信息，包括农历、宜忌、时辰等传统文化元素。</p>
-					<div class="flex flex-wrap gap-2 mb-4">
-						<span class="bg-amber-100 text-amber-800 py-1 px-3 rounded-full text-sm">Vue 3</span>
-						<span class="bg-rose-100 text-rose-800 py-1 px-3 rounded-full text-sm">Pinia</span>
-						<span class="bg-sky-100 text-sky-800 py-1 px-3 rounded-full text-sm">Vite</span>
-						<span class="bg-emerald-100 text-emerald-800 py-1 px-3 rounded-full text-sm">Node.js</span>
-					</div>
-					<a href="https://xjl.rth1.xyz/%E4%B8%87%E5%B9%B4%E5%8E%86%E5%8F%96%E6%8C%87%E5%AE%9A%E6%97%A5%E6%9C%9F-12%E6%97%B6%E8%BE%B0%E5%90%89%E5%87%B6%E4%BF%A1%E6%81%AF.html"
-						class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">查看详情</a>
-				</div>
-			</div>
-			<div
-				class="bg-white rounded-lg overflow-hidden shadow-md hover:translate-y-[-10px] hover:shadow-lg transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://api.lolimi.cn/API/dmtx/yspc.php" alt="全球历史地震信息"
-						class="w-full h-full object-cover hover:scale-110 transition-all duration-500">
-				</div>
-				<div class="p-6">
-					<h3 class="text-2xl font-bold text-gray-800 mb-2">全球历史地震信息</h3>
-					<p class="text-gray-600 mb-4">一个功能强大的全球历史地震信息查询工具，支持获取指定日期的全球历史地震信息详细信息。</p>
-					<div class="flex flex-wrap gap-2 mb-4">
-						<span class="bg-amber-100 text-amber-800 py-1 px-3 rounded-full text-sm">Vue 3</span>
-						<span class="bg-rose-100 text-rose-800 py-1 px-3 rounded-full text-sm">Pinia</span>
-						<span class="bg-sky-100 text-sky-800 py-1 px-3 rounded-full text-sm">Vite</span>
-						<span class="bg-emerald-100 text-emerald-800 py-1 px-3 rounded-full text-sm">Node.js</span>
-					</div>
-					<a href="https://xjl.rth1.xyz/%E5%85%A8%E7%90%83%E5%8E%86%E5%8F%B2%E5%9C%B0%E9%9C%87%E4%BF%A1%E6%81%AF.html"
-						class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">查看详情</a>
-				</div>
-			</div>
-		</div>
-	</section>
-
-	<!-- 联系部分 -->
-	<section id="contact" class="py-24 px-12 bg-gray-100">
-		<div class="text-center mb-16">
-			<h2 class="text-4xl font-bold text-gray-800 relative inline-block">联系我</h2>
-			<div class="w-16 h-1 bg-blue-500 absolute bottom-[-10px] left-1/2 -translate-x-1/2"></div>
-		</div>
-		<div class="flex flex-col md:flex-row gap-12 max-w-6xl mx-auto">
-			<div class="w-full md:w-1/2">
-				<h3 class="text-3xl font-bold text-gray-800 mb-8">让我们一起合作</h3>
-				<div class="flex items-center mb-6">
-					<div
-						class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl">
-						<i class="fa-solid fa-map-marker-alt"></i>
-					</div>
-					<div class="ml-4">
-						<h4 class="text-lg font-bold text-gray-800 mb-1">地址</h4>
-						<p class="text-gray-600">西安市</p>
-					</div>
-				</div>
-				<div class="flex items-center mb-6">
-					<div
-						class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl">
-						<i class="fa-solid fa-envelope"></i>
-					</div>
-					<div class="ml-4">
-						<h4 class="text-lg font-bold text-gray-800 mb-1">邮箱</h4>
-						<p class="text-gray-600">xjlverycool@gmail.com</p>
-					</div>
-				</div>
-				<div class="flex items-center mb-8">
-					<div
-						class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl">
-						<i class="fa-solid fa-phone"></i>
-					</div>
-					<div class="ml-4">
-						<h4 class="text-lg font-bold text-gray-800 mb-1">电话</h4>
-						<p class="text-gray-600">+86 *** **** ****</p>
-					</div>
-				</div>
-				<div class="flex space-x-4">
-					<a href="#"
-						class="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-blue-600 hover:translate-y-[-5px] transition-all duration-300">
-						<i class="fa-brands fa-github"></i>
-					</a>
-					<a href="#"
-						class="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-blue-600 hover:translate-y-[-5px] transition-all duration-300">
-						<i class="fa-brands fa-linkedin"></i>
-					</a>
-					<a href="#"
-						class="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-blue-600 hover:translate-y-[-5px] transition-all duration-300">
-						<i class="fa-brands fa-twitter"></i>
-					</a>
-					<a href="#"
-						class="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl hover:bg-blue-600 hover:translate-y-[-5px] transition-all duration-300">
-						<i class="fa-brands fa-instagram"></i>
-					</a>
-				</div>
-			</div>
-			<div class="w-full md:w-1/2">
-				<form>
-					<div class="mb-4">
-						<input type="text" placeholder="您的姓名"
-							class="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:border-blue-500">
-					</div>
-					<div class="mb-4">
-						<input type="email" placeholder="您的邮箱"
-							class="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:border-blue-500">
-					</div>
-					<div class="mb-4">
-						<input type="text" placeholder="主题"
-							class="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:border-blue-500">
-					</div>
-					<div class="mb-6">
-						<textarea placeholder="您的留言"
-							class="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:border-blue-500"></textarea>
-					</div>
-					<button type="submit"
-						class="bg-blue-500 text-white py-3 px-8 rounded-full font-semibold shadow-md hover:bg-blue-600 hover:translate-y-[-3px] hover:shadow-lg transition-all duration-300">发送消息</button>
-				</form>
-			</div>
-		</div>
-	</section>
-
-	<!-- 页脚部分 -->
-	<footer class="bg-gray-800 text-white py-12 px-12 text-center">
-		<div class="flex justify-center space-x-8 mb-6">
-			<a href="#home" class="hover:text-blue-500">首页</a>
-			<a href="#about" class="hover:text-blue-500">关于我</a>
-			<a href="#projects" class="hover:text-blue-500">项目</a>
-			<a href="#bookmarks" class="hover:text-blue-500">网页收藏</a>
-			<a href="#contact" class="hover:text-blue-500">联系我</a>
-		</div>
-		<p>&copy;2025 我的个人网站. 保留所有权利.</p>
-		<p>备案号：龙 ICP 备 2025娱乐 号 - 1</p>
-		<p>Copyright © 2025-2100 Long All Rights Reserved.</p>
-	</footer>
-
-	<script>
-		let index = 0;
-		const words = ['富强', '民主', '文明', '和谐',
-			'自由', '平等', '公正', '法治',
-			'爱国', '敬业', '诚信', '友善'];
-
-		const FLOAT_DISTANCE = 150;
-		const ANIMATION_DURATION = 2;
-
-		let lastClickX = null;
-		let lastClickY = null;
-		const CLICK_TOLERANCE = 10; // 判定为同一位置的容差范围（像素）
-
-		document.addEventListener('click', function (e) {
-			if (index >= words.length) index = 0;
-
-			const wordElement = document.createElement('div');
-			wordElement.className = 'word';
-			wordElement.textContent = words[index];
-			wordElement.style.left = e.clientX + 'px';
-			wordElement.style.top = e.clientY + 'px';
-			wordElement.style.opacity = 1;
-			wordElement.style.transition = `all ${ANIMATION_DURATION}s`;
-
-			document.body.appendChild(wordElement);
-
-			requestAnimationFrame(() => {
-				let xOffset, yOffset;
-
-				// 判断是否为同一位置的连续点击
-				const isSamePosition = lastClickX !== null &&
-					Math.abs(e.clientX - lastClickX) <= CLICK_TOLERANCE &&
-					Math.abs(e.clientY - lastClickY) <= CLICK_TOLERANCE;
-
-				if (isSamePosition) {
-					// 同一位置：只向正上方移动
-					xOffset = 0;
-					yOffset = -FLOAT_DISTANCE;
-				} else {
-					// 不同位置：随机方向
-					xOffset = (Math.random() - 0.5) * FLOAT_DISTANCE;
-					yOffset = -FLOAT_DISTANCE * 0.7;
-				}
-
-				// 更新最后点击位置
-				lastClickX = e.clientX;
-				lastClickY = e.clientY;
-
-				wordElement.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
-				wordElement.style.opacity = 0;
-
-				setTimeout(() => {
-					wordElement.remove();
-				}, ANIMATION_DURATION * 1000);
-			});
-
-			index++;
-		});
-		// 导航栏滚动效果
-		window.addEventListener('scroll', function () {
-			const navbar = document.querySelector('nav');
-			if (window.scrollY > 50) {
-				navbar.classList.add('py-3');
-				navbar.classList.remove('py-4');
-			} else {
-				navbar.classList.add('py-4');
-				navbar.classList.remove('py-3');
-			}
-
-			// 更新滚动进度条
-			const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-			const scrolled = window.scrollY;
-			const scrollPercent = (scrolled / scrollHeight) * 100;
-			document.querySelector('.scroll-progress-bar').style.width = `${scrollPercent}%`;
-		});
-
-		// 平滑滚动
-		document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-			anchor.addEventListener('click', function (e) {
-				e.preventDefault();
-
-				const targetId = this.getAttribute('href');
-				const targetElement = document.querySelector(targetId);
-
-				if (targetElement) {
-					window.scrollTo({
-						top: targetElement.offsetTop - 80,
-						behavior: 'smooth'
-					});
-				}
-			});
-		});
-
-		// 表单提交
-		document.querySelector('#contact form').addEventListener('submit', function (e) {
-			e.preventDefault();
-			alert('感谢您的留言！我会尽快回复您。');
-			this.reset();
-		});
-
-		// 网页收藏功能
-		const bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
-		const bookmarkList = document.getElementById('bookmark-list');
-		const addBookmarkForm = document.getElementById('add-bookmark-form');
-
-		// 渲染收藏的网页
-		function renderBookmarks() {
-			bookmarkList.innerHTML = '';
-			bookmarks.forEach((bookmark, index) => {
-				const bookmarkCard = document.createElement('div');
-				bookmarkCard.className = 'bg-white p-6 rounded-lg shadow-md hover:translate-y-[-5px] transition-all duration-300';
-				bookmarkCard.innerHTML = `
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">${bookmark.name}</h3>
-                    <p class="text-gray-600 mb-4">${bookmark.description || '无描述'}</p>
-                    <a href="${bookmark.url}" target="_blank" class="text-blue-500 hover:underline">访问网页</a>
-                    <button class="bg-red-500 text-white py-1 px-3 rounded-md float-right hover:bg-red-600" data-index="${index}">删除</button>
-                `;
-				bookmarkList.appendChild(bookmarkCard);
-			});
-
-			// 添加删除功能
-			document.querySelectorAll('.bg-red-500').forEach(btn => {
-				btn.addEventListener('click', function () {
-					const index = this.getAttribute('data-index');
-					bookmarks.splice(index, 1);
-					localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
-					renderBookmarks();
-				});
-			});
-		}
-
-		// 添加新收藏
-		addBookmarkForm.addEventListener('submit', function (e) {
-			e.preventDefault();
-			const name = this.querySelector('input[type="text"]').value;
-			const url = this.querySelector('input[type="url"]').value;
-			const description = this.querySelector('textarea').value;
-
-			bookmarks.push({ name, url, description });
-			localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
-			renderBookmarks();
-			this.reset();
-		});
-
-		// 初始渲染
-		renderBookmarks();
-
-		// 北京时间24小时制时钟（带秒数）
-		function updateBeijingTime() {
-			const now = new Date();
-			const formatter = new Intl.DateTimeFormat('zh-CN', {
-				year: 'numeric',
-				month: '2-digit',
-				day: '2-digit',
-				hour: '2-digit',
-				minute: '2-digit',
-				second: '2-digit',
-				hour12: false,
-				timeZone: 'Asia/Shanghai'
-			});
-			const formattedTime = formatter.format(now);
-			const [datePart, timePart] = formattedTime.split(' ');
-
-			// 使用文档片段优化DOM操作
-			const fragment = document.createDocumentFragment();
-			fragment.append(datePart);
-			const separator = document.createElement('span');
-			separator.classList.add('time-separator');
-			separator.textContent = ' ';
-			fragment.appendChild(separator);
-			fragment.append(timePart);
-
-			document.getElementById('datetime-display').replaceChildren(fragment);
-		}
-
-		// 使用requestAnimationFrame实现平滑更新（每秒更新一次）
-		let lastSecond = -1;
-		function clockLoop() {
-			const now = new Date();
-			const currentSecond = now.getSeconds();
-			if (currentSecond !== lastSecond) {
-				updateBeijingTime();
-				lastSecond = currentSecond;
-			}
-			requestAnimationFrame(clockLoop);
-		}
-
-		// 初始化时钟
-		clockLoop();
-
-		// ------------------- 新增天气信息获取与渲染 -------------------
-		const weatherApiUrl = 'https://api.nsmao.net/api/weather/query?key=NPctIs4Xm8TjgfydBOfCwT3ZJF&adcode=610100'; // 请替换为实际API地址
-		const weatherInfo = document.getElementById('weather-info');
-		const weatherCity = document.getElementById('weather-city');
-		const weatherTemperature = document.getElementById('weather-temperature');
-		const weatherCondition = document.getElementById('weather-condition');
-
-		// 天气图标映射（可根据实际天气情况扩展）
-		const weatherIcons = {
-			晴天: 'fas fa-sun',
-			多云: 'fas fa-cloud',
-			雨天: 'fas fa-cloud-rain',
-			雪天: 'fas fa-snowflake',
-			// 其他天气状态...
-		};
-
-		// 天气和IP信息获取
-		async function fetchWeather() {
-			try {
-				const response = await fetch(weatherApiUrl);
-				const data = await response.json();
-				if (data.code === 200) {
-					const weatherData = data.data;
-
-					// 更新天气信息
-					const iconClass = weatherIcons[weatherData.weather] || 'fas fa-question';
-					weatherInfo.querySelector('.weather-icon').className = `weather-icon ${iconClass}`;
-					weatherCity.textContent = `${weatherData.province} ${weatherData.city}`;
-					weatherTemperature.textContent = `${weatherData.temperature}°C`;
-					weatherCondition.textContent = `· ${weatherData.weather} · ${weatherData.wind_direction} ${weatherData.wind_power} · 湿度${weatherData.humidity}%`;
-
-					// 新增：更新IP信息
-					document.getElementById('current-ip').textContent = data.ip;
-				}
-			} catch (error) {
-				console.error('天气/IP数据获取失败:', error);
-				weatherInfo.style.display = 'none';
-				document.getElementById('ip-info').style.display = 'none';
-			}
-		}
-
-		// 初始加载和定时更新
-		fetchWeather();
-		setInterval(fetchWeather, 600000);
-	</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBtn = document.getElementById('search-btn');
+            const latitudeInput = document.getElementById('latitude');
+            const longitudeInput = document.getElementById('longitude');
+            const errorMessage = document.getElementById('error-message');
+            const loadingIndicator = document.querySelector('.loading');
+            const addressCard = document.querySelector('.address-card');
+            
+            // 示例坐标点击事件
+            document.querySelectorAll('.coordinate').forEach(item => {
+                item.addEventListener('click', function() {
+                    latitudeInput.value = this.getAttribute('data-lat');
+                    longitudeInput.value = this.getAttribute('data-lng');
+                    searchAddress();
+                });
+            });
+            
+            // 搜索按钮点击事件
+            searchBtn.addEventListener('click', searchAddress);
+            
+            // 回车键触发搜索
+            latitudeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchAddress();
+            });
+            
+            longitudeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchAddress();
+            });
+            
+            function searchAddress() {
+                const lat = latitudeInput.value.trim();
+                const lng = longitudeInput.value.trim();
+                
+                // 验证输入
+                if (!lat || !lng) {
+                    showError('请输入有效的经纬度坐标');
+                    return;
+                }
+                
+                if (isNaN(lat) || isNaN(lng)) {
+                    showError('经纬度必须是数字');
+                    return;
+                }
+                
+                // 显示加载状态
+                loadingIndicator.style.display = 'block';
+                addressCard.style.display = 'none';
+                errorMessage.style.display = 'none';
+                
+                // 模拟API请求（实际项目中应替换为真实API调用）
+                setTimeout(() => {
+                    // 这里模拟API响应
+                    const mockResponse = {
+                        status: 0,
+                        result: {
+                            address: "陕西省西安市未央区尚诚路",
+                            address_component: {
+                                nation: "中国",
+                                province: "陕西省",
+                                city: "西安市",
+                                district: "未央区",
+                                street: "尚诚路",
+                                street_number: ""
+                            },
+                            formatted_addresses: {
+                                recommend: "未央区陕西交通职业技术学院(崇学路南)"
+                            },
+                            ad_info: {
+                                adcode: "610112",
+                                phone_area_code: "029"
+                            },
+                            location: {
+                                lat: 34.323683,
+                                lng: 108.938458
+                            }
+                        }
+                    };
+                    
+                    // 处理响应
+                    handleResponse(mockResponse);
+                }, 1200);
+            }
+            
+            function handleResponse(response) {
+                loadingIndicator.style.display = 'none';
+                
+                if (response.status === 0) {
+                    // 显示结果
+                    const result = response.result;
+                    document.querySelector('.address-main').textContent = result.address;
+                    document.querySelectorAll('.address-detail')[0].textContent = 
+                        `${result.address_component.nation}, ${result.address_component.province}, ${result.address_component.city}, ${result.address_component.district}`;
+                    
+                    document.querySelectorAll('.address-detail')[1].textContent = 
+                        result.formatted_addresses.recommend;
+                    
+                    document.querySelectorAll('.location-item')[0].innerHTML = 
+                        `<strong>行政区划代码</strong>${result.ad_info.adcode}`;
+                    
+                    document.querySelectorAll('.location-item')[1].innerHTML = 
+                        `<strong>电话区号</strong>${result.ad_info.phone_area_code}`;
+                    
+                    document.querySelectorAll('.location-item')[2].innerHTML = 
+                        `<strong>经度/纬度</strong>${result.location.lng.toFixed(6)}, ${result.location.lat.toFixed(6)}`;
+                    
+                    addressCard.style.display = 'flex';
+                } else {
+                    showError('无法获取地址信息，请检查坐标是否正确');
+                }
+            }
+            
+            function showError(message) {
+                loadingIndicator.style.display = 'none';
+                addressCard.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = message;
+            }
+        });
+    </script>
 </body>
-
 </html>
